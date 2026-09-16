@@ -29,7 +29,10 @@ app.use('/api/comments', protect, commentRouter)
 
 app.get('/', (req, res) => res.send("Server is live"));
 
-const PORT = process.env.port || 5000;
+const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`server is running on http://localhost:${PORT}`)
-)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => console.log(`server is running on http://localhost:${PORT}`))
+}
+
+export default app
