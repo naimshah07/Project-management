@@ -1,6 +1,7 @@
 import express from "express";
 import { Webhook } from "svix";
 import { prisma } from "../config/prisma.js";
+import { inngest } from "../inngest/index.js";
 
 const router = express.Router();
 
@@ -78,11 +79,16 @@ router.post("/", express.raw({ type: "application/json" }), async (req, res) => 
 
         switch (type) {
             case "user.created":
+                await upsertUserFromClerk(data);
+                await inngest.send({ name: "clerk/user.created", data });
+                break;
             case "user.updated":
                 await upsertUserFromClerk(data);
+                await inngest.send({ name: "clerk/user.updated", data });
                 break;
             case "user.deleted":
                 await prisma.user.deleteMany({ where: { id: data.id } });
+                await inngest.send({ name: "clerk/user.deleted", data });
                 break;
             case "organization.created":
                 await upsertWorkspaceOwner(data.created_by);
@@ -103,6 +109,7 @@ router.post("/", express.raw({ type: "application/json" }), async (req, res) => 
                     },
                 });
                 await upsertWorkspaceMember(data.created_by, data.id, "ADMIN");
+                await inngest.send({ name: "clerk/organization.created", data });
                 break;
             case "organization.updated":
                 await prisma.workspace.upsert({
@@ -120,13 +127,16 @@ router.post("/", express.raw({ type: "application/json" }), async (req, res) => 
                         image_url: data.image_url || "",
                     },
                 });
+                await inngest.send({ name: "clerk/organization.updated", data });
                 break;
             case "organization.deleted":
                 await prisma.workspace.deleteMany({ where: { id: data.id } });
+                await inngest.send({ name: "clerk/organization.deleted", data });
                 break;
             case "organizationInvitation.accepted":
                 await upsertWorkspaceOwner(data.user_id);
                 await upsertWorkspaceMember(data.user_id, data.organization_id, normalizeRole(data.role));
+                await inngest.send({ name: "clerk/organizationInvitation.accepted", data });
                 break;
             default:
                 break;

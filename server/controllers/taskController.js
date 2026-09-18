@@ -118,6 +118,10 @@ export const updateTask = async (req, res) => {
         const assigneeChanged = typeof assigneeId !== 'undefined' && assigneeId !== task.assigneeId;
         if (assigneeChanged && taskWithAssignee?.assignee) {
             await notifyAssignee(taskWithAssignee, origin);
+            await inngest.send({
+                name: "app/task.assigned",
+                data: { taskId: req.params.id, origin }
+            });
         }
 
         res.status(201).json({ message: "Task updated successfully", task: updatedTask });

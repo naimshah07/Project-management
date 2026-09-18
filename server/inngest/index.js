@@ -19,6 +19,11 @@ const getEmail = (data) => data.email_addresses?.[0]?.email_address || `${data.i
 const getName = (data, fallbackEmail) =>
     `${data.first_name || ""} ${data.last_name || ""}`.trim() || fallbackEmail;
 
+const normalizeRole = (role) => {
+    const roleName = typeof role === "string" ? role : role?.name;
+    return String(roleName || "").toLowerCase().includes("admin") ? "ADMIN" : "MEMBER";
+};
+
 const syncUserFromClerk = inngest.createFunction(
     { id: 'sync-user-from-clerk', name: 'Sync User from Clerk', triggers: { event: 'clerk/user.created' } },
     async ({ event }) => {
@@ -71,8 +76,114 @@ const deleteUserFromClerk = inngest.createFunction(
     }
 );
 
+const syncWorkspaceFromClerk = inngest.createFunction(
+    { id: 'sync-workspace-from-clerk', name: 'Sync Workspace from Clerk', triggers: { event: 'clerk/organization.created' } },
+    async ({ event }) => {
+        const { data } = event;
+        const ownerId = data.created_by;
+
+        await prisma.user.upsert({
+            where: { id: ownerId },
+            update: {},
+            create: {
+                id: ownerId,
+                email: `${ownerId}@clerk.local`,
+                name: ownerId,
+                image: "",
+            },
+        });
+
+        await prisma.workspace.upsert({
+            where: { id: data.id },
+            update: {
+                name: data.name,
+                slug: data.slug,
+                ownerId,
+                image_url: data.image_url || "",
+            },
+            create: {
+                id: data.id,
+                name: data.name,
+                slug: data.slug,
+                ownerId,
+                image_url: data.image_url || "",
+            },
+        });
+
+        await prisma.workspaceMember.upsert({
+            where: {
+                userId_workspaceId: {
+                    userId: ownerId,
+                    workspaceId: data.id,
+                },
+            },
+            update: { role: "ADMIN" },
+            create: { userId: ownerId, workspaceId: data.id, role: "ADMIN" },
+        });
+    }
+);
+
+const updateWorkspaceFromClerk = inngest.createFunction(
+    { id: 'update-workspace-from-clerk', name: 'Update Workspace from Clerk', triggers: { event: 'clerk/organization.updated' } },
+    async ({ event }) => {
+        const { data } = event;
+        await prisma.workspace.upsert({
+            where: { id: data.id },
+            update: {
+                name: data.name,
+                slug: data.slug,
+                image_url: data.image_url || "",
+            },
+            create: {
+                id: data.id,
+                name: data.name,
+                slug: data.slug,
+                ownerId: data.created_by || data.id,
+                image_url: data.image_url || "",
+            },
+        });
+    }
+);
+
+const deleteWorkspaceFromClerk = inngest.createFunction(
+    { id: 'delete-workspace-with-clerk', name: 'Delete Workspace with Clerk', triggers: { event: 'clerk/organization.deleted' } },
+    async ({ event }) => {
+        const { data } = event;
+        await prisma.workspace.deleteMany({ where: { id: data.id } });
+    }
+);
+
+const syncWorkspaceMemberFromClerk = inngest.createFunction(
+    { id: 'sync-workspace-member-from-clerk', name: 'Sync Workspace Member from Clerk', triggers: { event: 'clerk/organizationInvitation.accepted' } },
+    async ({ event }) => {
+        const { data } = event;
+        const userId = data.user_id;
+        const workspaceId = data.organization_id;
+        const role = normalizeRole(data.role);
+
+        await prisma.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+                id: userId,
+                email: `${userId}@clerk.local`,
+                name: userId,
+                image: "",
+            },
+        });
+
+        await prisma.workspaceMember.upsert({
+            where: {
+                userId_workspaceId: { userId, workspaceId },
+            },
+            update: { role },
+            create: { userId, workspaceId, role },
+        });
+    }
+);
+
 const sendTaskAssignmentEmail = inngest.createFunction(
-    { id: 'send-task-assignment-email', name: 'Send Task Assignment Email', triggers: { event: 'task.assigned' } },
+    { id: 'send-task-assignment-mail', name: 'Send Task Assignment Email', triggers: { event: 'app/task.assigned' } },
     async ({ event }) => {
         const { taskId, origin } = event.data;
 
@@ -113,7 +224,7 @@ const sendTaskAssignmentEmail = inngest.createFunction(
                 return prisma.task.findUnique({ where: { id: taskId } });
             });
             if (updated && updated.status !== 'DONE') {
-                await step.run('senf-task-remainder-mail', async () => {
+                await step.run('send-task-remainder-mail', async () => {
                     await sendEmail(
                         task.assignee.email,
                         `Task Overdue: ${task.project.name} - ${task.title}`,
@@ -130,5 +241,9 @@ export const functions = [
     deleteUserFromClerk,
     syncUserFromClerk,
     updateUserFromClerk,
+    syncWorkspaceFromClerk,
+    updateWorkspaceFromClerk,
+    deleteWorkspaceFromClerk,
+    syncWorkspaceMemberFromClerk,
     sendTaskAssignmentEmail,
 ];
