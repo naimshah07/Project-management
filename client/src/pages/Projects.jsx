@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Plus, Search, FolderOpen } from "lucide-react";
 import ProjectCard from "../components/ProjectCard";
@@ -18,7 +18,7 @@ export default function Projects() {
         priority: "ALL",
     });
 
-    const filterProjects = () => {
+    const filterProjects = useCallback(() => {
         let filtered = projects;
 
         if (searchTerm) {
@@ -40,11 +40,11 @@ export default function Projects() {
         }
 
         setFilteredProjects(filtered);
-    };
+    }, [projects, searchTerm, filters]);
 
     useEffect(() => {
         filterProjects();
-    }, [projects, searchTerm, filters]);
+    }, [filterProjects]);
 
     return (
         <div className="space-y-7">

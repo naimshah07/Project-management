@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { CalendarIcon, MessageCircle, PenIcon, SendIcon, User2 } from "lucide-react";
 import { useAuth, useUser } from "@clerk/clerk-react";
@@ -51,7 +51,7 @@ const TaskDetails = () => {
 
     const { currentWorkspace } = useSelector((state) => state.workspace);
 
-    const fetchComments = async () => {
+    const fetchComments = useCallback(async () => {
         if (!taskId) return
         try {
             const token = await getToken()
@@ -61,9 +61,9 @@ const TaskDetails = () => {
             toast.error(error?.response?.data?.message || error.message);
         }
 
-    };
+    }, [taskId, getToken]);
 
-    const fetchTaskDetails = async () => {
+    const fetchTaskDetails = useCallback(async () => {
         setLoading(true);
         if (!projectId || !taskId) return;
 
@@ -76,7 +76,7 @@ const TaskDetails = () => {
         setTask(tsk);
         setProject(proj);
         setLoading(false);
-    };
+    }, [projectId, taskId, currentWorkspace]);
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
@@ -98,7 +98,7 @@ const TaskDetails = () => {
         }
     };
 
-    useEffect(() => { fetchTaskDetails(); }, [taskId]);
+    useEffect(() => { fetchTaskDetails(); }, [fetchTaskDetails]);
 
     useEffect(() => {
         if (taskId && task) {
@@ -106,7 +106,7 @@ const TaskDetails = () => {
             const interval = setInterval(() => { fetchComments(); }, 10000);
             return () => clearInterval(interval);
         }
-    }, [taskId, task]);
+    }, [taskId, task, fetchComments]);
 
     if (loading) return <div className="muted-text px-4 py-10 text-center">Loading task details...</div>;
     if (!task) return <div className="text-danger px-4 py-10 text-center font-medium">Task not found.</div>;

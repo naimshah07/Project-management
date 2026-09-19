@@ -87,7 +87,9 @@ export default function ProjectDetail() {
 
             {/* Info Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {infoCards.map(({ label, value, Icon, tint }, idx) => (
+                {infoCards.map((
+                    // eslint-disable-next-line no-unused-vars
+                    { label, value, Icon, tint }, idx) => (
                     <div key={idx} className="card p-5 flex items-center justify-between gap-4">
                         <div>
                             <p className="muted-text text-xs mb-1">{label}</p>

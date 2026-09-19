@@ -11,14 +11,14 @@ import { fetchWorkspaces } from '../features/workspaceSlice'
 
 const Layout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-    const { loading, workspaces } = useSelector((state) => state.workspace)
+    const { loading } = useSelector((state) => state.workspace)
     const dispatch = useDispatch()
     const { user, isLoaded } = useUser()
     const { getToken } = useAuth()
 
     useEffect(() => {
         dispatch(loadTheme())
-    }, [])
+    }, [dispatch])
 
     useEffect(() => {
         if (!isLoaded || !user) return;
