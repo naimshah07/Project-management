@@ -29,33 +29,44 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     }, [setIsSidebarOpen]);
 
     return (
-        <div ref={sidebarRef} className={`z-10 bg-white dark:bg-zinc-900 min-w-68 flex flex-col h-screen border-r border-gray-200 dark:border-zinc-800 max-sm:absolute transition-all ${isSidebarOpen ? 'left-0' : '-left-full'} `} >
+        <aside
+            ref={sidebarRef}
+            className={`z-30 w-72 shrink-0 flex flex-col h-screen bg-bg-soft dark:bg-bg-soft border-r border-border dark:border-border backdrop-blur-xl max-lg:fixed max-lg:top-0 max-lg:h-screen max-lg:shadow-xl transition-all duration-300 ${isSidebarOpen ? 'max-lg:left-0' : 'max-lg:-left-full'}`}
+        >
             <WorkspaceDropdown />
-            <hr className='border-gray-200 dark:border-zinc-800' />
-            <div className='flex-1 overflow-y-scroll no-scrollbar flex flex-col'>
-                <div>
-                    <div className='p-4'>
-                        {menuItems.map((item) => (
-                            <NavLink to={item.href} key={item.name} className={({ isActive }) => `flex items-center gap-3 py-2 px-4 text-gray-800 dark:text-zinc-100 cursor-pointer rounded transition-all  ${isActive ? 'bg-gray-100 dark:bg-zinc-900 dark:bg-gradient-to-br dark:from-zinc-800 dark:to-zinc-800/50  dark:ring-zinc-800' : 'hover:bg-gray-50 dark:hover:bg-zinc-800/60'}`} >
-                                <item.icon size={16} />
-                                <p className='text-sm truncate'>{item.name}</p>
-                            </NavLink>
-                        ))}
-                        <button
-                            onClick={openUserProfile}
-                            className='flex w-full items-center gap-3 py-2 px-4 text-gray-800 dark:text-zinc-100 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-zinc-800/60 transition-all'>
-                            <SettingsIcon size={16} />
-                            <p className='text-sm truncate'>Settings</p>
-                        </button>
-                    </div>
-                    <MyTasksSidebar />
-                    <ProjectSidebar />
-                </div>
+            <div className="h-px bg-border-soft dark:bg-border-soft mx-5" />
+            <div className='flex-1 overflow-y-auto no-scrollbar flex flex-col py-3 px-4'>
+                <nav className="space-y-1 mb-4">
+                    {menuItems.map((item) => (
+                        <NavLink
+                            to={item.href}
+                            key={item.name}
+                            end={item.href === '/'}
+                            className={({ isActive }) =>
+                                `flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${isActive
+                                    ? 'text-white shadow-md'
+                                    : 'text-text-soft hover:text-text hover:bg-border-soft dark:hover:bg-border-soft'
+                                }`
+                            }
+                            style={({ isActive }) => isActive ? { background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', boxShadow: '0 4px 14px -4px rgb(99 102 241 / 0.55)' } : {}}
+                        >
+                            <item.icon size={17} strokeWidth={2} />
+                            <span>{item.name}</span>
+                        </NavLink>
+                    ))}
+                    <button
+                        onClick={openUserProfile}
+                        className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-medium text-text-soft hover:text-text hover:bg-border-soft dark:hover:bg-border-soft transition-all"
+                    >
+                        <SettingsIcon size={17} strokeWidth={2} />
+                        <span>Settings</span>
+                    </button>
+                </nav>
 
-
+                <MyTasksSidebar />
+                <ProjectSidebar />
             </div>
-
-        </div>
+        </aside>
     )
 }
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, UserPlus } from "lucide-react";
+import { Mail, UserPlus, XIcon, SendIcon } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
@@ -40,6 +40,7 @@ const InviteMemberDialog = ({ isDialogOpen, setIsDialogOpen }) => {
             dispatch(fetchWorkspaces({ getToken }))
             toast.success("Invitation Sent Successfully")
             setIsDialogOpen(false)
+            setFormData({ email: "", role: "org:member" });
         } catch (error) {
             console.log(error);
             toast.error(error.response?.data?.message || error.message)
@@ -52,49 +53,61 @@ const InviteMemberDialog = ({ isDialogOpen, setIsDialogOpen }) => {
     if (!isDialogOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl p-6 w-full max-w-md text-zinc-900 dark:text-zinc-200">
-                {/* Header */}
-                <div className="mb-4">
-                    <h2 className="text-xl font-bold flex items-center gap-2">
-                        <UserPlus className="size-5 text-zinc-900 dark:text-zinc-200" /> Invite Team Member
-                    </h2>
-                    {currentWorkspace && (
-                        <p className="text-sm text-zinc-700 dark:text-zinc-400">
-                            Inviting to workspace: <span className="text-blue-600 dark:text-blue-400">{currentWorkspace.name}</span>
-                        </p>
-                    )}
+        <div className="fixed inset-0 z-50 bg-bg/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="card w-full max-w-md p-0 shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-soft">
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-2xl bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] text-white flex items-center justify-center shadow-[0_4px_14px_-4px_rgb(99_102_241_/_0.55)]">
+                            <UserPlus className="size-5" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-text tracking-tight">Invite Team Member</h2>
+                            {currentWorkspace && (
+                                <p className="muted-text text-xs">
+                                    to workspace <span className="text-accent font-medium">{currentWorkspace.name}</span>
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setIsDialogOpen(false)}
+                        className="btn-ghost !size-9 !p-0 text-text-muted"
+                        aria-label="Close"
+                    >
+                        <XIcon className="size-4.5" />
+                    </button>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 p-6">
                     {/* Email */}
-                    <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium text-zinc-900 dark:text-zinc-200">
+                    <div className="space-y-1.5">
+                        <label htmlFor="email" className="text-xs muted-text uppercase tracking-wider font-semibold">
                             Email Address
                         </label>
                         <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400 w-4 h-4" />
-                            <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="Enter email address" className="pl-10 mt-1 w-full rounded border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-200 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 py-2 focus:outline-none focus:border-blue-500" required />
+                            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4.5 text-text-muted pointer-events-none" />
+                            <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="teammate@company.com" className="input pl-11" required />
                         </div>
                     </div>
 
                     {/* Role */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-zinc-900 dark:text-zinc-200">Role</label>
-                        <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full rounded border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-200 py-2 px-3 mt-1 focus:outline-none focus:border-blue-500 text-sm" >
-                            <option value="org:member">Member</option>
-                            <option value="org:admin">Admin</option>
+                    <div className="space-y-1.5">
+                        <label className="text-xs muted-text uppercase tracking-wider font-semibold">Role</label>
+                        <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="input" >
+                            <option value="org:member">Member — can work on projects</option>
+                            <option value="org:admin">Admin — full workspace access</option>
                         </select>
                     </div>
 
                     {/* Footer */}
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button type="button" onClick={() => setIsDialogOpen(false)} className="px-5 py-2 rounded text-sm border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" >
+                    <div className="flex justify-end gap-3 pt-3 border-t border-border-soft -mx-6 px-6 pt-5">
+                        <button type="button" onClick={() => setIsDialogOpen(false)} className="btn-ghost" >
                             Cancel
                         </button>
-                        <button type="submit" disabled={isSubmitting || !currentWorkspace} className="px-5 py-2 rounded text-sm bg-gradient-to-br from-blue-500 to-blue-600 text-white disabled:opacity-50 hover:opacity-90 transition" >
-                            {isSubmitting ? "Sending..." : "Send Invitation"}
+                        <button type="submit" disabled={isSubmitting || !currentWorkspace} className="btn-primary min-w-[160px] gap-2" >
+                            <SendIcon className="size-4" />
+                            {isSubmitting ? "Sending…" : "Send Invitation"}
                         </button>
                     </div>
                 </form>

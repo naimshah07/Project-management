@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { CheckCircle, Clock, AlertTriangle, Users, ArrowRightIcon } from "lucide-react";
+import { CheckCircle2, Clock3, AlertTriangle, Users, ChevronRightIcon } from "lucide-react";
 
-// Colors for charts and priorities
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
-const PRIORITY_COLORS = {
-    LOW: "text-red-600 bg-red-200 dark:text-red-500 dark:bg-red-600",
-    MEDIUM: "text-blue-600 bg-blue-200 dark:text-blue-500 dark:bg-blue-600",
-    HIGH: "text-emerald-600 bg-emerald-200 dark:text-emerald-500 dark:bg-emerald-600",
+const CHART_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+
+const priorityMeta = {
+    LOW: { chip: "bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-success", bar: "var(--color-success)" },
+    MEDIUM: { chip: "bg-[color-mix(in_srgb,var(--color-warning)_14%,transparent)] text-warning", bar: "var(--color-warning)" },
+    HIGH: { chip: "bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-danger", bar: "var(--color-danger)" },
 };
 
 const ProjectAnalytics = ({ project, tasks }) => {
@@ -56,76 +56,91 @@ const ProjectAnalytics = ({ project, tasks }) => {
         {
             label: "Completion Rate",
             value: `${completionRate}%`,
-            color: "text-emerald-600 dark:text-emerald-400",
-            icon: <CheckCircle className="size-5 text-emerald-600 dark:text-emerald-400" />,
-            bg: "bg-emerald-200 dark:bg-emerald-500/10",
+            tint: "var(--color-success)",
+            Icon: CheckCircle2,
         },
         {
             label: "Active Tasks",
             value: stats.inProgress,
-            color: "text-blue-600 dark:text-blue-400",
-            icon: <Clock className="size-5 text-blue-600 dark:text-blue-400" />,
-            bg: "bg-blue-200 dark:bg-blue-500/10",
+            tint: "var(--color-accent)",
+            Icon: Clock3,
         },
         {
             label: "Overdue Tasks",
             value: stats.overdue,
-            color: "text-red-600 dark:text-red-400",
-            icon: <AlertTriangle className="size-5 text-red-600 dark:text-red-400" />,
-            bg: "bg-red-200 dark:bg-red-500/10",
+            tint: "var(--color-danger)",
+            Icon: AlertTriangle,
         },
         {
             label: "Team Size",
             value: project?.members?.length || 0,
-            color: "text-purple-600 dark:text-purple-400",
-            icon: <Users className="size-5 text-purple-600 dark:text-purple-400" />,
-            bg: "bg-purple-200 dark:bg-purple-500/10",
+            tint: "#8b5cf6",
+            Icon: Users,
         },
     ];
 
     return (
         <div className="space-y-6">
             {/* Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {metrics.map((m, i) => (
-                    <div
-                        key={i}
-                        className="not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-6"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-zinc-600 dark:text-zinc-400 text-sm">{m.label}</p>
-                                <p className={`text-xl font-bold ${m.color}`}>{m.value}</p>
+                    <div key={i} className="card p-5">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                                <p className="muted-text text-xs mb-1">{m.label}</p>
+                                <p className="text-2xl font-bold text-text tracking-tight">{m.value}</p>
                             </div>
-                            <div className={`p-2 rounded-md ${m.bg}`}>{m.icon}</div>
+                            <div
+                                className="size-11 rounded-2xl flex items-center justify-center shrink-0"
+                                style={{ background: `color-mix(in srgb, ${m.tint} 14%, transparent)`, color: m.tint }}
+                            >
+                                <m.Icon className="size-5" />
+                            </div>
                         </div>
                     </div>
                 ))}
             </div>
 
             {/* Charts */}
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-4">
                 {/* Tasks by Status */}
-                <div className="not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-6">
-                    <h2 className="text-zinc-900 dark:text-white mb-4 font-medium">Tasks by Status</h2>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={statusData}>
+                <div className="card p-6">
+                    <h2 className="section-title mb-5 !text-sm">Tasks by Status</h2>
+                    <ResponsiveContainer width="100%" height={280}>
+                        <BarChart data={statusData} barSize={44}>
                             <XAxis
                                 dataKey="name"
-                                tick={{ fill: "#52525b", fontSize: 12 }}
-                                axisLine={{ stroke: "#d4d4d8" }}
-                                dark={{ stroke: "#27272a" }}
+                                tick={{ fill: "currentColor", fontSize: 12 }}
+                                axisLine={{ stroke: "transparent" }}
+                                tickLine={false}
+                                className="text-text-muted"
                             />
-                            <YAxis tick={{ fill: "#52525b", fontSize: 12 }} axisLine={{ stroke: "#d4d4d8" }} />
-                            <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                            <YAxis
+                                tick={{ fill: "currentColor", fontSize: 12 }}
+                                axisLine={{ stroke: "transparent" }}
+                                tickLine={false}
+                                allowDecimals={false}
+                                className="text-text-muted"
+                            />
+                            <Bar
+                                dataKey="value"
+                                radius={[10, 10, 0, 0]}
+                                fill="url(#statusGradient)"
+                            />
+                            <defs>
+                                <linearGradient id="statusGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#6366f1" />
+                                    <stop offset="100%" stopColor="#8b5cf6" />
+                                </linearGradient>
+                            </defs>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
                 {/* Tasks by Type */}
-                <div className="not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-6">
-                    <h2 className="text-zinc-900 dark:text-white mb-4 font-medium">Tasks by Type</h2>
-                    <ResponsiveContainer width="100%" height={300}>
+                <div className="card p-6">
+                    <h2 className="section-title mb-5 !text-sm">Tasks by Type</h2>
+                    <ResponsiveContainer width="100%" height={280}>
                         <PieChart>
                             <Pie
                                 data={typeData}
@@ -133,11 +148,14 @@ const ProjectAnalytics = ({ project, tasks }) => {
                                 nameKey="name"
                                 cx="50%"
                                 cy="50%"
-                                outerRadius={100}
-                                label={({ name, value }) => `${name}: ${value}`}
+                                innerRadius={55}
+                                outerRadius={95}
+                                paddingAngle={3}
+                                label={({ name, value }) => `${name} · ${value}`}
+                                labelLine={false}
                             >
                                 {typeData.map((_, i) => (
-                                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="transparent" />
                                 ))}
                             </Pie>
                         </PieChart>
@@ -146,31 +164,34 @@ const ProjectAnalytics = ({ project, tasks }) => {
             </div>
 
             {/* Priority Breakdown */}
-            <div className="not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-6">
-                <h2 className="text-zinc-900 dark:text-white mb-4 font-medium">Tasks by Priority</h2>
-                <div className="space-y-4">
-                    {priorityData.map((p) => (
-                        <div key={p.name} className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <ArrowRightIcon className={`size-3.5 ${PRIORITY_COLORS[p.name]} bg-transparent dark:bg-transparent`} />
-                                    <span className="text-zinc-900 dark:text-zinc-200 capitalize">{p.name.toLowerCase()}</span>
+            <div className="card p-6">
+                <h2 className="section-title mb-6 !text-sm">Tasks by Priority</h2>
+                <div className="space-y-5">
+                    {priorityData.map((p) => {
+                        const meta = priorityMeta[p.name] || priorityMeta.MEDIUM;
+                        return (
+                            <div key={p.name} className="space-y-2.5">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <ChevronRightIcon className={`size-4 ${meta.chip.split(' ')[1]}`} />
+                                        <span className="text-text text-sm font-medium capitalize">{p.name.toLowerCase()}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="muted-text text-xs">{p.value} tasks</span>
+                                        <span className={`badge ${meta.chip} font-semibold`}>
+                                            {p.percentage}%
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-zinc-600 dark:text-zinc-400 text-sm">{p.value} tasks</span>
-                                    <span className="px-2 py-0.5 border border-zinc-400 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 text-xs rounded">
-                                        {p.percentage}%
-                                    </span>
+                                <div className="w-full bg-bg-soft rounded-full h-2 overflow-hidden">
+                                    <div
+                                        className="h-2 rounded-full transition-all duration-500"
+                                        style={{ width: `${p.percentage}%`, background: meta.bar }}
+                                    />
                                 </div>
                             </div>
-                            <div className="w-full bg-zinc-300 dark:bg-zinc-800 rounded-full h-1.5">
-                                <div
-                                    className={`h-1.5 rounded-full ${PRIORITY_COLORS[p.name]}`}
-                                    style={{ width: `${p.percentage}%` }}
-                                />
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

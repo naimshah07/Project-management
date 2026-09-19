@@ -16,12 +16,10 @@ const Layout = () => {
     const { user, isLoaded } = useUser()
     const { getToken } = useAuth()
 
-    // Initial load of theme
     useEffect(() => {
         dispatch(loadTheme())
     }, [])
 
-    // Load workspaces once auth has finished loading and user is available
     useEffect(() => {
         if (!isLoaded || !user) return;
 
@@ -47,26 +45,33 @@ const Layout = () => {
 
     if (!user) {
         return (
-            <div className='flex justify-center items-center h-screen bg-white dark:bg-zinc-950'>
-                <SignIn />
+            <div className='flex justify-center items-center min-h-screen bg-bg dark:bg-bg'>
+                <div className="card p-10 w-full max-w-md shadow-xl">
+                    <SignIn />
+                </div>
             </div>
         )
     }
 
     if (loading) return (
-        <div className='flex items-center justify-center h-screen bg-white dark:bg-zinc-950'>
-            <Loader2Icon className="size-7 text-blue-500 animate-spin" />
+        <div className='flex items-center justify-center min-h-screen bg-bg dark:bg-bg'>
+            <div className="card p-8 flex items-center gap-3">
+                <Loader2Icon className="size-6 animate-spin" style={{ color: 'var(--color-accent)' }} />
+                <span className="muted-text">Loading workspace...</span>
+            </div>
         </div>
     )
 
     return (
-        <div className="flex bg-white dark:bg-zinc-950 text-gray-900 dark:text-slate-100">
+        <div className="flex min-h-screen bg-bg text-text dark:bg-bg dark:text-text">
             <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
-            <div className="flex-1 flex flex-col h-screen">
+            <div className="flex-1 flex flex-col min-h-screen">
                 <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
-                <div className="flex-1 h-full p-6 xl:p-10 xl:px-16 overflow-y-scroll">
-                    <Outlet />
-                </div>
+                <main className="flex-1 h-full p-6 xl:p-10 xl:px-16 overflow-y-auto">
+                    <div className="max-w-7xl mx-auto">
+                        <Outlet />
+                    </div>
+                </main>
             </div>
         </div>
     )

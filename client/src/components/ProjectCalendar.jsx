@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { format, isSameDay, isBefore, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths } from "date-fns";
-import { CalendarIcon, Clock, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarIcon, Clock3, User2, ChevronLeftIcon, ChevronRightIcon, Inbox } from "lucide-react";
 
-const typeColors = {
-    BUG: "bg-red-200 text-red-800 dark:bg-red-500 dark:text-red-900",
-    FEATURE: "bg-blue-200 text-blue-800 dark:bg-blue-500 dark:text-blue-900",
-    TASK: "bg-green-200 text-green-800 dark:bg-green-500 dark:text-green-900",
-    IMPROVEMENT: "bg-purple-200 text-purple-800 dark:bg-purple-500 dark:text-purple-900",
-    OTHER: "bg-amber-200 text-amber-800 dark:bg-amber-500 dark:text-amber-900",
+const typeChips = {
+    BUG: "bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-danger",
+    FEATURE: "bg-[color-mix(in_srgb,var(--color-accent)_14%,transparent)] text-accent",
+    TASK: "bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-success",
+    IMPROVEMENT: "bg-[color-mix(in_srgb,#8b5cf6_14%,transparent)] text-[#8b5cf6]",
+    OTHER: "bg-[color-mix(in_srgb,var(--color-warning)_14%,transparent)] text-warning",
 };
 
-const priorityBorders = {
-    LOW: "border-zinc-300 dark:border-zinc-600",
-    MEDIUM: "border-amber-300 dark:border-amber-500",
-    HIGH: "border-orange-300 dark:border-orange-500",
+const priorityLeftBorder = {
+    LOW: "border-l-[3px] border-l-success",
+    MEDIUM: "border-l-[3px] border-l-warning",
+    HIGH: "border-l-[3px] border-l-danger",
 };
 
 const ProjectCalendar = ({ tasks }) => {
@@ -40,49 +40,75 @@ const ProjectCalendar = ({ tasks }) => {
         setCurrentMonth((prev) => (direction === "next" ? addMonths(prev, 1) : subMonths(prev, 1)));
     };
 
+    const startDayOfWeek = daysInMonth[0]?.getDay() ?? 0;
+
     return (
         <div className="grid lg:grid-cols-3 gap-6">
             {/* Calendar View */}
-            <div className="lg:col-span-2 ">
-                <div className="not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-zinc-900 dark:text-white text-md flex gap-2 items-center max-sm:hidden">
-                            <CalendarIcon className="size-5" /> Task Calendar
+            <div className="lg:col-span-2 space-y-6">
+                <div className="card p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-text font-semibold flex gap-2 items-center">
+                            <span className="size-8 rounded-xl bg-accent-soft text-accent flex items-center justify-center shrink-0">
+                                <CalendarIcon className="size-4" />
+                            </span>
+                            Task Calendar
                         </h2>
-                        <div className="flex gap-2 items-center">
-                            <button onClick={() => handleMonthChange("prev")}>
-                                <ChevronLeft className="size-5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white" />
+                        <div className="flex items-center gap-1 p-1 rounded-xl bg-bg-soft">
+                            <button onClick={() => handleMonthChange("prev")} className="btn-ghost !size-8 !p-0">
+                                <ChevronLeftIcon className="size-4" />
                             </button>
-                            <span className="text-zinc-900 dark:text-white">{format(currentMonth, "MMMM yyyy")}</span>
-                            <button onClick={() => handleMonthChange("next")}>
-                                <ChevronRight className="size-5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white" />
+                            <span className="text-text font-semibold px-3 text-sm min-w-[120px] text-center">
+                                {format(currentMonth, "MMMM yyyy")}
+                            </span>
+                            <button onClick={() => handleMonthChange("next")} className="btn-ghost !size-8 !p-0">
+                                <ChevronRightIcon className="size-4" />
                             </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-7 text-xs text-zinc-600 dark:text-zinc-400 mb-2 text-center">
+                    <div className="grid grid-cols-7 mb-2">
                         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                            <div key={day}>{day}</div>
+                            <div key={day} className="text-center muted-text text-[11px] uppercase tracking-wider font-semibold py-2">
+                                {day}
+                            </div>
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-7 gap-2">
+                    <div className="grid grid-cols-7 gap-1.5">
+                        {Array.from({ length: startDayOfWeek }).map((_, i) => (
+                            <div key={`blank-${i}`} />
+                        ))}
                         {daysInMonth.map((day) => {
                             const dayTasks = getTasksForDate(day);
                             const isSelected = isSameDay(day, selectedDate);
+                            const isToday = isSameDay(day, today);
                             const hasOverdue = dayTasks.some((t) => t.status !== "DONE" && isBefore(t.due_date, today));
 
                             return (
                                 <button
                                     key={day}
                                     onClick={() => setSelectedDate(day)}
-                                    className={`sm:h-14 rounded-md flex flex-col items-center justify-center text-sm
-                                    ${isSelected ? "bg-blue-200 text-blue-900 dark:bg-blue-600 dark:text-white" : "bg-zinc-50 text-zinc-900 dark:bg-zinc-800/40 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"}
-                                    ${hasOverdue ? "border border-red-300 dark:border-red-500" : ""}`}
+                                    className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-sm transition-all duration-200
+                                    ${isSelected
+                                        ? 'bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] text-white shadow-[0_4px_14px_-4px_rgb(99_102_241_/_0.55)]'
+                                        : isToday
+                                        ? 'bg-accent-soft text-accent ring-1 ring-accent/30 hover:bg-accent/20'
+                                        : 'bg-bg-soft/50 text-text hover:bg-bg-soft hover:text-accent'}
+                                    ${hasOverdue ? 'ring-2 ring-danger/40' : ''}`}
                                 >
-                                    <span>{format(day, "d")}</span>
+                                    <span className={`font-semibold ${isSelected ? 'text-white' : isToday ? 'text-accent' : ''}`}>
+                                        {format(day, "d")}
+                                    </span>
                                     {dayTasks.length > 0 && (
-                                        <span className="text-[10px] text-blue-700 dark:text-blue-400">{dayTasks.length} tasks</span>
+                                        <div className="absolute bottom-1.5 flex gap-0.5">
+                                            {dayTasks.slice(0, 3).map((_, i) => (
+                                                <span
+                                                    key={i}
+                                                    className={`size-1 rounded-full ${isSelected ? 'bg-white/90' : 'bg-accent'}`}
+                                                />
+                                            ))}
+                                        </div>
                                     )}
                                 </button>
                             );
@@ -91,28 +117,36 @@ const ProjectCalendar = ({ tasks }) => {
                 </div>
 
                 {/* Tasks for Selected Day */}
-                {getTasksForDate(selectedDate).length > 0 && (
-                    <div className=" not-dark:bg-white mt-6 dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-4">
-                        <h3 className="text-zinc-900 dark:text-white text-lg mb-3">
-                            Tasks for {format(selectedDate, "MMM d, yyyy")}
-                        </h3>
+                <div className="card p-6">
+                    <h3 className="section-title mb-4 !text-base">
+                        {getTasksForDate(selectedDate).length > 0
+                            ? `Tasks for ${format(selectedDate, "MMM d, yyyy")}`
+                            : `${format(selectedDate, "MMM d, yyyy")}`}
+                    </h3>
+                    {getTasksForDate(selectedDate).length > 0 ? (
                         <div className="space-y-3">
                             {getTasksForDate(selectedDate).map((task) => (
                                 <div
                                     key={task.id}
-                                    className={`bg-zinc-50 dark:bg-zinc-800/40 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition p-4 rounded border-l-4 ${priorityBorders[task.priority]}`}
+                                    className={`bg-bg-soft/40 hover:bg-bg-soft transition p-4 rounded-xl border border-border-soft ${priorityLeftBorder[task.priority] || priorityLeftBorder.MEDIUM}`}
                                 >
-                                    <div className="flex justify-between mb-2">
-                                        <h4 className="text-zinc-900 dark:text-white font-medium">{task.title}</h4>
-                                        <span className={`px-2 py-0.5 rounded text-xs ${typeColors[task.type]}`}>
+                                    <div className="flex justify-between items-start mb-2.5 gap-3">
+                                        <h4 className="text-text font-medium leading-snug">{task.title}</h4>
+                                        <span className={`badge ${typeChips[task.type] || typeChips.OTHER} uppercase shrink-0`}>
                                             {task.type}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-400">
-                                        <span className="capitalize">{task.priority.toLowerCase()} priority</span>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="muted-text capitalize">{task.priority.toLowerCase()} priority</span>
                                         {task.assignee && (
-                                            <span className="flex items-center gap-1">
-                                                <User className="w-3 h-3" />
+                                            <span className="flex items-center gap-1.5 text-text-soft">
+                                                {task.assignee.image ? (
+                                                    <img src={task.assignee.image} className="size-4 rounded-full ring-1 ring-border-soft" />
+                                                ) : (
+                                                    <div className="size-4 rounded-full bg-accent-soft text-accent flex items-center justify-center text-[8px] font-bold">
+                                                        <User2 className="size-3" />
+                                                    </div>
+                                                )}
                                                 {task.assignee.name}
                                             </span>
                                         )}
@@ -120,33 +154,50 @@ const ProjectCalendar = ({ tasks }) => {
                                 </div>
                             ))}
                         </div>
-                    </div>
-                )}
+                    ) : (
+                        <div className="flex flex-col items-center gap-3 py-10 muted-text">
+                            <div className="size-12 rounded-2xl bg-accent-soft flex items-center justify-center">
+                                <Inbox className="size-6 text-accent" />
+                            </div>
+                            <p className="text-sm">No tasks scheduled for this day.</p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
                 {/* Upcoming Tasks */}
-                <div className="bg-white dark:bg-zinc-950 dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-4">
-                    <h3 className="text-zinc-900 dark:text-white text-sm flex items-center gap-2 mb-3">
-                        <Clock className="w-4 h-4" /> Upcoming Tasks
+                <div className="card p-5">
+                    <h3 className="section-title mb-4 !text-sm flex items-center gap-2">
+                        <span className="size-7 rounded-lg bg-accent-soft text-accent flex items-center justify-center shrink-0">
+                            <Clock3 className="size-3.5" />
+                        </span>
+                        Upcoming Tasks
                     </h3>
                     {upcomingTasks.length === 0 ? (
-                        <p className="text-zinc-500 dark:text-zinc-400 text-sm text-center">No upcoming tasks</p>
+                        <div className="muted-text text-sm text-center py-6 rounded-xl bg-bg-soft/50 border border-dashed border-border-soft">
+                            No upcoming tasks
+                        </div>
                     ) : (
                         <div className="space-y-2">
                             {upcomingTasks.map((task) => (
                                 <div
                                     key={task.id}
-                                    className="bg-zinc-50 dark:bg-zinc-800/40 hover:bg-zinc-100 dark:hover:bg-zinc-800 p-3 rounded-lg transition"
+                                    className="bg-bg-soft/40 hover:bg-bg-soft p-3.5 rounded-xl border border-border-soft transition group"
                                 >
-                                    <div className="flex justify-between items-start text-sm">
-                                        <span className="text-zinc-900 dark:text-white">{task.title}</span>
-                                        <span className={`text-xs px-2 py-0.5 rounded ${typeColors[task.type]}`}>
+                                    <div className="flex justify-between items-start gap-2 mb-1.5">
+                                        <span className="text-text text-sm font-medium leading-snug group-hover:text-accent transition-colors">
+                                            {task.title}
+                                        </span>
+                                        <span className={`badge ${typeChips[task.type] || typeChips.OTHER} uppercase shrink-0 text-[10px]`}>
                                             {task.type}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-zinc-600 dark:text-zinc-400">{format(task.due_date, "MMM d")}</p>
+                                    <p className="text-xs muted-text flex items-center gap-1.5">
+                                        <CalendarIcon className="size-3" />
+                                        {format(task.due_date, "MMM d, yyyy")}
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -155,26 +206,35 @@ const ProjectCalendar = ({ tasks }) => {
 
                 {/* Overdue Tasks */}
                 {overdueTasks.length > 0 && (
-                    <div className="bg-white dark:bg-zinc-950  border border-red-300 dark:border-red-500 border-l-4 rounded-lg p-4">
-                        <h3 className="text-red-700 dark:text-red-400 text-sm flex items-center gap-2 mb-3">
-                            <Clock className="w-4 h-4" /> Overdue Tasks ({overdueTasks.length})
+                    <div className="card p-5 ring-2 ring-danger/25 border-danger/40">
+                        <h3 className="section-title mb-4 !text-sm flex items-center gap-2 !text-danger">
+                            <span className="size-7 rounded-lg bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-danger flex items-center justify-center shrink-0">
+                                <Clock3 className="size-3.5" />
+                            </span>
+                            Overdue Tasks ({overdueTasks.length})
                         </h3>
                         <div className="space-y-2">
                             {overdueTasks.slice(0, 5).map((task) => (
-                                <div key={task.id} className="bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 p-3 rounded-lg transition" >
-                                    <div className="flex justify-between text-sm text-zinc-900 dark:text-white">
-                                        <span>{task.title}</span>
-                                        <span className="text-xs px-2 py-0.5 rounded bg-red-200 dark:bg-red-500 text-red-900 dark:text-red-900">
+                                <div
+                                    key={task.id}
+                                    className="bg-[color-mix(in_srgb,var(--color-danger)_8%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] p-3.5 rounded-xl border border-danger/20 transition"
+                                >
+                                    <div className="flex justify-between items-start gap-2 mb-1.5">
+                                        <span className="text-text text-sm font-medium leading-snug">
+                                            {task.title}
+                                        </span>
+                                        <span className={`badge ${typeChips[task.type] || typeChips.OTHER} uppercase shrink-0 text-[10px]`}>
                                             {task.type}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-red-600 dark:text-red-300">
-                                        Due {format(task.due_date, "MMM d")}
+                                    <p className="text-xs text-danger flex items-center gap-1.5 font-medium">
+                                        <CalendarIcon className="size-3" />
+                                        Due {format(task.due_date, "MMM d, yyyy")}
                                     </p>
                                 </div>
                             ))}
                             {overdueTasks.length > 5 && (
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center">
+                                <p className="text-xs muted-text text-center pt-1">
                                     +{overdueTasks.length - 5} more
                                 </p>
                             )}

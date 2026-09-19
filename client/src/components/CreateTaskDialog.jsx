@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, XIcon, ListTodoIcon } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { format } from "date-fns";
 import { useAuth } from "@clerk/clerk-react";
@@ -55,28 +55,49 @@ export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, pr
     };
 
     return showCreateTask ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 dark:bg-black/60 backdrop-blur">
-            <div className="bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-lg w-full max-w-md p-6 text-zinc-900 dark:text-white">
-                <h2 className="text-xl font-bold mb-4">Create New Task</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+            <div className="card w-full max-w-md p-0 shadow-2xl [animation:zoom-in_0.25s_ease-out] overflow-hidden">
+                <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-soft">
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-2xl bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] text-white flex items-center justify-center shadow-[0_4px_14px_-4px_rgb(99_102_241_/_0.55)]">
+                            <ListTodoIcon className="size-5" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-text tracking-tight">Create New Task</h2>
+                            {project && (
+                                <p className="muted-text text-xs">
+                                    in <span className="text-accent font-medium">{project.name}</span>
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setShowCreateTask(false)}
+                        className="btn-ghost !size-9 !p-0 text-text-muted"
+                        aria-label="Close"
+                    >
+                        <XIcon className="size-4.5" />
+                    </button>
+                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 p-6">
                     {/* Title */}
-                    <div className="space-y-1">
-                        <label htmlFor="title" className="text-sm font-medium">Title</label>
-                        <input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="Task title" className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                    <div className="space-y-1.5">
+                        <label htmlFor="title" className="text-xs muted-text uppercase tracking-wider font-semibold">Title</label>
+                        <input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="e.g. Wire up authentication flow" className="input" required />
                     </div>
 
                     {/* Description */}
-                    <div className="space-y-1">
-                        <label htmlFor="description" className="text-sm font-medium">Description</label>
-                        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Describe the task" className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1 h-24 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <div className="space-y-1.5">
+                        <label htmlFor="description" className="text-xs muted-text uppercase tracking-wider font-semibold">Description</label>
+                        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Add more context…" className="input !min-h-[90px]" />
                     </div>
 
                     {/* Type & Priority */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-sm font-medium">Type</label>
-                            <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1" >
+                        <div className="space-y-1.5">
+                            <label className="text-xs muted-text uppercase tracking-wider font-semibold">Type</label>
+                            <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} className="input" >
                                 <option value="BUG">Bug</option>
                                 <option value="FEATURE">Feature</option>
                                 <option value="TASK">Task</option>
@@ -85,9 +106,9 @@ export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, pr
                             </select>
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-sm font-medium">Priority</label>
-                            <select value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })} className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1"                             >
+                        <div className="space-y-1.5">
+                            <label className="text-xs muted-text uppercase tracking-wider font-semibold">Priority</label>
+                            <select value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })} className="input" >
                                 <option value="LOW">Low</option>
                                 <option value="MEDIUM">Medium</option>
                                 <option value="HIGH">High</option>
@@ -97,9 +118,9 @@ export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, pr
 
                     {/* Assignee and Status */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-sm font-medium">Assignee</label>
-                            <select value={formData.assigneeId} onChange={(e) => setFormData({ ...formData, assigneeId: e.target.value })} className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1" >
+                        <div className="space-y-1.5">
+                            <label className="text-xs muted-text uppercase tracking-wider font-semibold">Assignee</label>
+                            <select value={formData.assigneeId} onChange={(e) => setFormData({ ...formData, assigneeId: e.target.value })} className="input" >
                                 <option value="">Unassigned</option>
                                 {teamMembers.map((member) => (
                                     <option key={member?.user.id} value={member?.user.id}>
@@ -109,9 +130,9 @@ export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, pr
                             </select>
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-sm font-medium">Status</label>
-                            <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1" >
+                        <div className="space-y-1.5">
+                            <label className="text-xs muted-text uppercase tracking-wider font-semibold">Status</label>
+                            <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="input" >
                                 <option value="TODO">To Do</option>
                                 <option value="IN_PROGRESS">In Progress</option>
                                 <option value="DONE">Done</option>
@@ -120,26 +141,27 @@ export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, pr
                     </div>
 
                     {/* Due Date */}
-                    <div className="space-y-1">
-                        <label className="text-sm font-medium">Due Date</label>
-                        <div className="flex items-center gap-2">
-                            <CalendarIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
-                            <input type="date" value={formData.due_date} onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} min={new Date().toISOString().split('T')[0]} className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1" />
+                    <div className="space-y-1.5">
+                        <label className="text-xs muted-text uppercase tracking-wider font-semibold">Due Date</label>
+                        <div className="relative">
+                            <CalendarIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4.5 text-text-muted pointer-events-none" />
+                            <input type="date" value={formData.due_date} onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} min={new Date().toISOString().split('T')[0]} className="input pl-10" />
                         </div>
                         {formData.due_date && (
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            <p className="text-xs muted-text flex items-center gap-1.5 pl-0.5">
+                                <CalendarIcon className="size-3" />
                                 {format(new Date(formData.due_date), "PPP")}
                             </p>
                         )}
                     </div>
 
                     {/* Footer */}
-                    <div className="flex justify-end gap-2 pt-2">
-                        <button type="button" onClick={() => setShowCreateTask(false)} className="rounded border border-zinc-300 dark:border-zinc-700 px-5 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" >
+                    <div className="flex justify-end gap-3 pt-3 border-t border-border-soft -mx-6 px-6 pt-5">
+                        <button type="button" onClick={() => setShowCreateTask(false)} className="btn-ghost" >
                             Cancel
                         </button>
-                        <button type="submit" disabled={isSubmitting} className="rounded px-5 py-2 text-sm bg-gradient-to-br from-blue-500 to-blue-600 hover:opacity-90 text-white dark:text-zinc-200 transition" >
-                            {isSubmitting ? "Creating..." : "Create Task"}
+                        <button type="submit" disabled={isSubmitting} className="btn-primary min-w-[140px]" >
+                            {isSubmitting ? "Creating…" : "Create Task"}
                         </button>
                     </div>
                 </form>

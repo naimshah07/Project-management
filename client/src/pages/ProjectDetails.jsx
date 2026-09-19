@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeftIcon, PlusIcon, SettingsIcon, BarChart3Icon, CalendarIcon, FileStackIcon, ZapIcon } from "lucide-react";
+import { ArrowLeftIcon, PlusIcon, SettingsIcon, BarChart3Icon, CalendarIcon, FileStackIcon, UsersIcon, ListTodoIcon, ActivityIcon, ZapIcon, CheckCircle2Icon, Clock3Icon } from "lucide-react";
 import ProjectAnalytics from "../components/ProjectAnalytics";
 import ProjectSettings from "../components/ProjectSettings";
 import CreateTaskDialog from "../components/CreateTaskDialog";
@@ -34,19 +34,30 @@ export default function ProjectDetail() {
         }
     }, [id, projects]);
 
-    const statusColors = {
-        PLANNING: "bg-zinc-200 text-zinc-900 dark:bg-zinc-600 dark:text-zinc-200",
-        ACTIVE: "bg-emerald-200 text-emerald-900 dark:bg-emerald-500 dark:text-emerald-900",
-        ON_HOLD: "bg-amber-200 text-amber-900 dark:bg-amber-500 dark:text-amber-900",
-        COMPLETED: "bg-blue-200 text-blue-900 dark:bg-blue-500 dark:text-blue-900",
-        CANCELLED: "bg-red-200 text-red-900 dark:bg-red-500 dark:text-red-900",
+    const statusChips = {
+        PLANNING: "bg-[color-mix(in_srgb,var(--color-text-muted)_14%,transparent)] text-text-muted",
+        ACTIVE: "bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-success",
+        ON_HOLD: "bg-[color-mix(in_srgb,var(--color-warning)_14%,transparent)] text-warning",
+        COMPLETED: "bg-[color-mix(in_srgb,var(--color-accent)_14%,transparent)] text-accent",
+        CANCELLED: "bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-danger",
     };
+
+    const infoCards = [
+        { label: "Total Tasks", value: tasks.length, Icon: ListTodoIcon, tint: "var(--color-accent)" },
+        { label: "Completed", value: tasks.filter((t) => t.status === "DONE").length, Icon: CheckCircle2Icon, tint: "var(--color-success)" },
+        { label: "In Progress", value: tasks.filter((t) => t.status === "IN_PROGRESS" || t.status === "TODO").length, Icon: Clock3Icon, tint: "var(--color-warning)" },
+        { label: "Team Members", value: project?.members?.length || 0, Icon: UsersIcon, tint: "#8b5cf6" },
+    ];
 
     if (!project) {
         return (
-            <div className="p-6 text-center text-zinc-900 dark:text-zinc-200">
-                <p className="text-3xl md:text-5xl mt-40 mb-10">Project not found</p>
-                <button onClick={() => navigate('/projects')} className="mt-4 px-4 py-2 rounded bg-zinc-200 text-zinc-900 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600" >
+            <div className="py-24 flex flex-col items-center gap-6 text-text">
+                <div className="size-20 rounded-3xl bg-danger/10 border border-danger/20 flex items-center justify-center">
+                    <ZapIcon className="size-10 text-danger" />
+                </div>
+                <p className="text-3xl md:text-4xl font-bold tracking-tight">Project not found</p>
+                <button onClick={() => navigate('/projects')} className="btn-primary" >
+                    <ArrowLeftIcon className="size-4" />
                     Back to Projects
                 </button>
             </div>
@@ -54,78 +65,88 @@ export default function ProjectDetail() {
     }
 
     return (
-        <div className="space-y-5 max-w-6xl mx-auto text-zinc-900 dark:text-white">
+        <div className="space-y-7 max-w-6xl mx-auto">
             {/* Header */}
-            <div className="flex max-md:flex-col gap-4 flex-wrap items-start justify-between max-w-6xl">
+            <div className="flex max-md:flex-col gap-4 flex-wrap items-start justify-between">
                 <div className="flex items-center gap-4">
-                    <button className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400" onClick={() => navigate('/projects')}>
-                        <ArrowLeftIcon className="w-4 h-4" />
+                    <button className="btn-ghost size-9" onClick={() => navigate('/projects')}>
+                        <ArrowLeftIcon className="size-4.5" />
                     </button>
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-xl font-medium">{project.name}</h1>
-                        <span className={`px-2 py-1 rounded text-xs capitalize ${statusColors[project.status]}`} >
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <h1 className="text-2xl font-bold tracking-tight text-text">{project.name}</h1>
+                        <span className={`badge ${statusChips[project.status] || statusChips.PLANNING} font-medium capitalize`} >
                             {project.status.replace("_", " ")}
                         </span>
                     </div>
                 </div>
-                <button onClick={() => setShowCreateTask(true)} className="flex items-center gap-2 px-5 py-2 text-sm rounded bg-gradient-to-br from-blue-500 to-blue-600 text-white" >
+                <button onClick={() => setShowCreateTask(true)} className="btn-primary gap-2" >
                     <PlusIcon className="size-4" />
                     New Task
                 </button>
             </div>
 
             {/* Info Cards */}
-            <div className="grid grid-cols-2 sm:flex flex-wrap gap-6">
-                {[
-                    { label: "Total Tasks", value: tasks.length, color: "text-zinc-900 dark:text-white" },
-                    { label: "Completed", value: tasks.filter((t) => t.status === "DONE").length, color: "text-emerald-700 dark:text-emerald-400" },
-                    { label: "In Progress", value: tasks.filter((t) => t.status === "IN_PROGRESS" || t.status === "TODO").length, color: "text-amber-700 dark:text-amber-400" },
-                    { label: "Team Members", value: project.members?.length || 0, color: "text-blue-700 dark:text-blue-400" },
-                ].map((card, idx) => (
-                    <div key={idx} className=" dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-200 dark:border-zinc-800 flex justify-between sm:min-w-60 p-4 py-2.5 rounded">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {infoCards.map(({ label, value, Icon, tint }, idx) => (
+                    <div key={idx} className="card p-5 flex items-center justify-between gap-4">
                         <div>
-                            <div className="text-sm text-zinc-600 dark:text-zinc-400">{card.label}</div>
-                            <div className={`text-2xl font-bold ${card.color}`}>{card.value}</div>
+                            <p className="muted-text text-xs mb-1">{label}</p>
+                            <p className="text-2xl font-bold text-text tracking-tight">{value}</p>
                         </div>
-                        <ZapIcon className={`size-4 ${card.color}`} />
+                        <div
+                            className="size-11 rounded-2xl flex items-center justify-center shrink-0"
+                            style={{ background: `color-mix(in srgb, ${tint} 14%, transparent)`, color: tint }}
+                        >
+                            <Icon className="size-5" />
+                        </div>
                     </div>
                 ))}
             </div>
 
             {/* Tabs */}
             <div>
-                <div className="inline-flex flex-wrap max-sm:grid grid-cols-3 gap-2 border border-zinc-200 dark:border-zinc-800 rounded overflow-hidden">
+                <div className="inline-flex flex-wrap max-sm:grid max-sm:grid-cols-2 gap-1.5 p-1.5 card !rounded-2xl">
                     {[
                         { key: "tasks", label: "Tasks", icon: FileStackIcon },
                         { key: "calendar", label: "Calendar", icon: CalendarIcon },
                         { key: "analytics", label: "Analytics", icon: BarChart3Icon },
                         { key: "settings", label: "Settings", icon: SettingsIcon },
-                    ].map((tabItem) => (
-                        <button key={tabItem.key} onClick={() => { setActiveTab(tabItem.key); setSearchParams({ id: id, tab: tabItem.key }) }} className={`flex items-center gap-2 px-4 py-2 text-sm transition-all ${activeTab === tabItem.key ? "bg-zinc-100 dark:bg-zinc-800/80" : "hover:bg-zinc-50 dark:hover:bg-zinc-700"}`} >
-                            <tabItem.icon className="size-3.5" />
-                            {tabItem.label}
-                        </button>
-                    ))}
+                    ].map((tabItem) => {
+                        const isActive = activeTab === tabItem.key;
+                        const Icon = tabItem.icon;
+                        return (
+                            <button
+                                key={tabItem.key}
+                                onClick={() => { setActiveTab(tabItem.key); setSearchParams({ id: id, tab: tabItem.key }) }}
+                                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all ${isActive
+                                    ? 'bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] text-white shadow-[0_4px_14px_-4px_rgb(99_102_241_/_0.55)]'
+                                    : 'text-text-soft hover:bg-bg-soft hover:text-text'}`}
+                            >
+                                <Icon className="size-4" />
+                                {tabItem.label}
+                            </button>
+                        );
+                    })}
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-7">
                     {activeTab === "tasks" && (
-                        <div className=" dark:bg-zinc-900/40 rounded max-w-6xl">
+                        <div className="max-w-6xl">
                             <ProjectTasks tasks={tasks} />
                         </div>
                     )}
                     {activeTab === "analytics" && (
-                        <div className=" dark:bg-zinc-900/40 rounded max-w-6xl">
+                        <div className="max-w-6xl">
                             <ProjectAnalytics tasks={tasks} project={project} />
                         </div>
                     )}
                     {activeTab === "calendar" && (
-                        <div className=" dark:bg-zinc-900/40 rounded max-w-6xl">
+                        <div className="max-w-6xl">
                             <ProjectCalendar tasks={tasks} />
                         </div>
                     )}
                     {activeTab === "settings" && (
-                        <div className=" dark:bg-zinc-900/40 rounded max-w-6xl">
+                        <div className="max-w-6xl">
                             <ProjectSettings project={project} />
                         </div>
                     )}

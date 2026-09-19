@@ -1,49 +1,70 @@
 import { Link } from "react-router-dom";
 
-const statusColors = {
-    PLANNING: "bg-gray-200 dark:bg-zinc-600 text-gray-900 dark:text-zinc-200",
-    ACTIVE: "bg-emerald-200 dark:bg-emerald-500 text-emerald-900 dark:text-emerald-900",
-    ON_HOLD: "bg-amber-200 dark:bg-amber-500 text-amber-900 dark:text-amber-900",
-    COMPLETED: "bg-blue-200 dark:bg-blue-500 text-blue-900 dark:text-blue-900",
-    CANCELLED: "bg-red-200 dark:bg-red-500 text-red-900 dark:text-red-900",
+const statusStyles = {
+    PLANNING: { bg: "color-mix(in srgb, #a78bfa 18%, transparent)", text: "#7c3aed" },
+    ACTIVE: { bg: "color-mix(in srgb, #10b981 18%, transparent)", text: "#059669" },
+    ON_HOLD: { bg: "color-mix(in srgb, #f59e0b 18%, transparent)", text: "#d97706" },
+    COMPLETED: { bg: "color-mix(in srgb, #3b82f6 18%, transparent)", text: "#2563eb" },
+    CANCELLED: { bg: "color-mix(in srgb, #ef4444 18%, transparent)", text: "#dc2626" },
+};
+
+const priorityColors = {
+    LOW: "#94a3b8",
+    MEDIUM: "#f59e0b",
+    HIGH: "#ef4444",
 };
 
 const ProjectCard = ({ project }) => {
     return (
-        <Link to={`/projectsDetail?id=${project.id}&tab=tasks`} className="bg-white dark:bg-zinc-950 dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-gray-200 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700 rounded-lg p-5 transition-all duration-200 group">
-            {/* Header */}
-            <div className="flex items-start justify-between mb-3">
+        <Link to={`/projectsDetail?id=${project.id}&tab=tasks`} className="card p-6 flex flex-col h-full group">
+            <div className="flex items-start justify-between mb-2 gap-3">
                 <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-zinc-200 mb-1 truncate group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="font-semibold text-text mb-1 truncate group-hover:text-accent transition-colors" style={{ '--tw-text-opacity': 1 }}>
                         {project.name}
                     </h3>
-                    <p className="text-gray-500 dark:text-zinc-400 text-sm line-clamp-2 mb-3">
-                        {project.description || "No description"}
-                    </p>
                 </div>
+                <div
+                    className="size-2.5 rounded-full shrink-0 mt-2"
+                    style={{ background: priorityColors[project.priority] }}
+                    title={`${project.priority} priority`}
+                />
             </div>
 
-            <div className="flex items-center justify-between mb-4">
-                <span className={`px-2 py-0.5 rounded text-xs ${statusColors[project.status]}`} >
+            <p className="text-text-soft text-sm line-clamp-2 mb-5 min-h-[2.5rem]">
+                {project.description || "No description"}
+            </p>
+
+            <div className="flex items-center justify-between mb-5">
+                <span
+                    className="badge"
+                    style={{
+                        background: statusStyles[project.status]?.bg,
+                        color: statusStyles[project.status]?.text,
+                    }}
+                >
                     {project.status.replace("_", " ")}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-zinc-500 capitalize">
-                    {project.priority} priority
+                <span className="text-xs text-text-muted capitalize">
+                    {project.priority?.toLowerCase()} priority
                 </span>
             </div>
 
-            {/* Progress */}
-            <div className="space-y-2">
+            <div className="mt-auto space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500 dark:text-zinc-500">Progress</span>
-                    <span className="text-gray-400 dark:text-zinc-400">{project.progress || 0}%</span>
+                    <span className="text-text-muted">Progress</span>
+                    <span className="text-text-soft font-medium">{project.progress || 0}%</span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-zinc-800 h-1.5 rounded">
-                    <div className="h-1.5 rounded bg-blue-500" style={{ width: `${project.progress || 0}%` }} />
+                <div className="w-full h-1.5 rounded-full bg-border-soft overflow-hidden">
+                    <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                            width: `${project.progress || 0}%`,
+                            background: 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%)'
+                        }}
+                    />
                 </div>
             </div>
-
-            </Link>
+        </Link>
     );
 };
 

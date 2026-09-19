@@ -1,5 +1,5 @@
 import { format, toDate } from "date-fns";
-import { FastForward, Plus, Save } from "lucide-react";
+import { Save, Plus, User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import AddProjectMember from "./AddProjectMember";
 import { useDispatch } from "react-redux";
@@ -7,6 +7,20 @@ import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 import api from "../configs/api";
 import { fetchWorkspaces } from "../features/workspaceSlice";
+
+const priorityChip = {
+    LOW: "bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-success",
+    MEDIUM: "bg-[color-mix(in_srgb,var(--color-warning)_14%,transparent)] text-warning",
+    HIGH: "bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-danger",
+};
+
+const statusChip = {
+    PLANNING: "bg-[color-mix(in_srgb,var(--color-text-muted)_14%,transparent)] text-text-muted",
+    ACTIVE: "bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-success",
+    ON_HOLD: "bg-[color-mix(in_srgb,var(--color-warning)_14%,transparent)] text-warning",
+    COMPLETED: "bg-[color-mix(in_srgb,var(--color-accent)_14%,transparent)] text-accent",
+    CANCELLED: "bg-[color-mix(in_srgb,var(--color-danger)_14%,transparent)] text-danger",
+};
 
 export default function ProjectSettings({ project }) {
 
@@ -50,100 +64,141 @@ export default function ProjectSettings({ project }) {
         if (project) setFormData(project);
     }, [project]);
 
-    const inputClasses = "w-full px-3 py-2 rounded mt-2 border text-sm dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-300";
-
-    const cardClasses = "rounded-lg border p-6 not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border-zinc-300 dark:border-zinc-800";
-
-    const labelClasses = "text-sm text-zinc-600 dark:text-zinc-400";
+    const progressGradient = `linear-gradient(90deg, #6366f1 0%, #8b5cf6 ${formData.progress}%, rgb(203 213 225 / 0.4) ${formData.progress}%, rgb(203 213 225 / 0.4) 100%)`;
 
     return (
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-6">
             {/* Project Details */}
-            <div className={cardClasses}>
-                <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-300 mb-4">Project Details</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="card p-6 space-y-5">
+                <h2 className="section-title !text-base mb-0">Project Details</h2>
+                <form onSubmit={handleSubmit} className="space-y-5">
                     {/* Name */}
                     <div className="space-y-2">
-                        <label className={labelClasses}>Project Name</label>
-                        <input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className={inputClasses} required />
+                        <label className="text-xs muted-text uppercase tracking-wider font-semibold">Project Name</label>
+                        <input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="input" required />
                     </div>
 
                     {/* Description */}
                     <div className="space-y-2">
-                        <label className={labelClasses}>Description</label>
-                        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className={inputClasses + " h-24"} />
+                        <label className="text-xs muted-text uppercase tracking-wider font-semibold">Description</label>
+                        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="input !min-h-[100px]" />
                     </div>
 
                     {/* Status & Priority */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className={labelClasses}>Status</label>
-                            <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className={inputClasses} >
+                            <label className="text-xs muted-text uppercase tracking-wider font-semibold">Status</label>
+                            <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="input" >
                                 <option value="PLANNING">Planning</option>
                                 <option value="ACTIVE">Active</option>
                                 <option value="ON_HOLD">On Hold</option>
                                 <option value="COMPLETED">Completed</option>
                                 <option value="CANCELLED">Cancelled</option>
                             </select>
+                            <div className={`badge w-fit mt-1 ${statusChip[formData.status] || statusChip.PLANNING}`}>
+                                Current: {formData.status.replace("_", " ")}
+                            </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className={labelClasses}>Priority</label>
-                            <select value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })} className={inputClasses} >
+                            <label className="text-xs muted-text uppercase tracking-wider font-semibold">Priority</label>
+                            <select value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })} className="input" >
                                 <option value="LOW">Low</option>
                                 <option value="MEDIUM">Medium</option>
                                 <option value="HIGH">High</option>
                             </select>
+                            <div className={`badge w-fit mt-1 ${priorityChip[formData.priority] || priorityChip.MEDIUM}`}>
+                                Current: {formData.priority}
+                            </div>
                         </div>
                     </div>
 
                     {/* Timeline */}
-                    <div className="space-y-4 grid grid-cols-2 gap-4">
+                    <div className="space-y-2 grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className={labelClasses}>Start Date</label>
-                            <input type="date" value={format(formData.start_date, "yyyy-MM-dd")} onChange={(e) => setFormData({ ...formData, start_date: new Date(e.target.value) })} className={inputClasses} />
+                            <label className="text-xs muted-text uppercase tracking-wider font-semibold">Start Date</label>
+                            <input type="date" value={format(formData.start_date, "yyyy-MM-dd")} onChange={(e) => setFormData({ ...formData, start_date: new Date(e.target.value) })} className="input" />
                         </div>
                         <div className="space-y-2">
-                            <label className={labelClasses}>End Date</label>
-                            <input type="date" value={format(formData.end_date, "yyyy-MM-dd")} onChange={(e) => setFormData({ ...formData, end_date: new Date(e.target.value) })} className={inputClasses} />
+                            <label className="text-xs muted-text uppercase tracking-wider font-semibold">End Date</label>
+                            <input type="date" value={format(formData.end_date, "yyyy-MM-dd")} onChange={(e) => setFormData({ ...formData, end_date: new Date(e.target.value) })} className="input" />
                         </div>
                     </div>
 
                     {/* Progress */}
-                    <div className="space-y-2">
-                        <label className={labelClasses}>Progress: {formData.progress}%</label>
-                        <input type="range" min="0" max="100" step="5" value={formData.progress} onChange={(e) => setFormData({ ...formData, progress: Number(e.target.value) })} className="w-full accent-blue-500 dark:accent-blue-400" />
+                    <div className="space-y-3 p-4 rounded-2xl bg-bg-soft/60 border border-border-soft">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs muted-text uppercase tracking-wider font-semibold">Overall Progress</label>
+                            <span className="badge bg-accent-soft text-accent font-semibold">{formData.progress}%</span>
+                        </div>
+                        <div className="h-3 w-full rounded-full overflow-hidden" style={{ background: progressGradient }} />
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="5"
+                            value={formData.progress}
+                            onChange={(e) => setFormData({ ...formData, progress: Number(e.target.value) })}
+                            className="w-full accent-accent"
+                        />
                     </div>
 
                     {/* Save Button */}
-                    <button type="submit" disabled={isSubmitting} className="ml-auto flex items-center text-sm justify-center gap-2 bg-gradient-to-br from-blue-500 to-blue-600 text-white px-4 py-2 rounded" >
-                        <Save className="size-4" /> {isSubmitting ? "Saving..." : "Save Changes"}
-                    </button>
+                    <div className="flex justify-end pt-1">
+                        <button type="submit" disabled={isSubmitting} className="btn-primary gap-2" >
+                            <Save className="size-4" /> {isSubmitting ? "Saving..." : "Save Changes"}
+                        </button>
+                    </div>
                 </form>
             </div>
 
             {/* Team Members */}
             <div className="space-y-6">
-                <div className={cardClasses}>
-                    <div className="flex items-center justify-between gap-4">
-                        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-300 mb-4">
-                            Team Members <span className="text-sm text-zinc-600 dark:text-zinc-400">({project.members.length})</span>
+                <div className="card p-6">
+                    <div className="flex items-center justify-between gap-3 mb-5">
+                        <h2 className="section-title !text-base mb-0">
+                            Team Members <span className="muted-text text-sm font-normal">({project.members.length})</span>
                         </h2>
-                        <button type="button" onClick={() => setIsDialogOpen(true)} className="p-2 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800" >
-                            <Plus className="size-4 text-zinc-900 dark:text-zinc-300" />
+                        <button type="button" onClick={() => setIsDialogOpen(true)} className="btn-primary gap-1.5 !py-2 !px-3.5" title="Add member">
+                            <Plus className="size-4" />
+                            <span className="max-sm:hidden">Add</span>
                         </button>
                         <AddProjectMember isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
                     </div>
 
                     {/* Member List */}
-                    {project.members.length > 0 && (
-                        <div className="space-y-2 mt-2 max-h-32 overflow-y-auto">
+                    {project.members.length > 0 ? (
+                        <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
                             {project.members.map((member, index) => (
-                                <div key={index} className="flex items-center justify-between px-3 py-2 rounded dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-300" >
-                                    <span> {member?.user?.email || "Unknown"} </span>
-                                    {project.team_lead === member.user.id && <span className="px-2 py-0.5 rounded-xs ring ring-zinc-200 dark:ring-zinc-600">Team Lead</span>}
+                                <div key={index} className="flex items-center justify-between px-3.5 py-3 rounded-xl bg-bg-soft/50 border border-border-soft hover:bg-bg-soft transition-colors group" >
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        {member?.user?.image ? (
+                                            <img src={member.user.image} className="size-9 rounded-xl ring-2 ring-border-soft shrink-0" alt="avatar" />
+                                        ) : (
+                                            <div className="size-9 rounded-xl bg-accent-soft text-accent flex items-center justify-center shrink-0 ring-2 ring-border-soft">
+                                                <User2 className="size-4" />
+                                            </div>
+                                        )}
+                                        <div className="min-w-0">
+                                            <span className="block text-sm font-medium text-text truncate">
+                                                {member?.user?.name || "Unknown user"}
+                                            </span>
+                                            <span className="block text-xs muted-text truncate">
+                                                {member?.user?.email || "No email on record"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {project.team_lead === member.user.id && (
+                                        <span className="badge bg-accent-soft text-accent font-semibold shrink-0">
+                                            Team Lead
+                                        </span>
+                                    )}
                                 </div>
                             ))}
+                        </div>
+                    ) : (
+                        <div className="py-10 text-center rounded-2xl bg-bg-soft/60 border border-dashed border-border-soft muted-text text-sm">
+                            No team members yet. Click Add to invite people.
                         </div>
                     )}
                 </div>

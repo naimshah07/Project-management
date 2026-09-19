@@ -19,13 +19,13 @@ function MyTasksSidebar() {
     const getTaskStatusColor = (status) => {
         switch (status) {
             case 'DONE':
-                return 'bg-green-500';
+                return 'bg-success shadow-[0_0_0_3px_rgb(16_185_129_/_0.18)]';
             case 'IN_PROGRESS':
-                return 'bg-yellow-500';
+                return 'bg-warning shadow-[0_0_0_3px_rgb(245_158_11_/_0.18)]';
             case 'TODO':
-                return 'bg-gray-500 dark:bg-zinc-500';
+                return 'bg-border shadow-[0_0_0_3px_rgb(203_213_225_/_0.3)]';
             default:
-                return 'bg-gray-400 dark:bg-zinc-400';
+                return 'bg-border shadow-[0_0_0_3px_rgb(203_213_225_/_0.3)]';
         }
     };
 
@@ -45,18 +45,20 @@ function MyTasksSidebar() {
 
     return (
         <div className="mt-6 px-3">
-            <div onClick={toggleMyTasks} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-800" >
-                <div className="flex items-center gap-2">
-                    <CheckSquareIcon className="w-4 h-4 text-gray-500 dark:text-zinc-400" />
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-zinc-300">My Tasks</h3>
-                    <span className="bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-zinc-300 text-xs px-2 py-0.5 rounded">
+            <div onClick={toggleMyTasks} className="flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 hover:bg-bg-soft group" >
+                <div className="flex items-center gap-2.5">
+                    <div className="size-7 rounded-lg bg-accent-soft flex items-center justify-center group-hover:scale-[1.03] transition-transform">
+                        <CheckSquareIcon className="w-4 h-4 text-accent" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-text">My Tasks</h3>
+                    <span className="badge bg-border-soft text-text-soft">
                         {myTasks.length}
                     </span>
                 </div>
                 {showMyTasks ? (
-                    <ChevronDownIcon className="w-4 h-4 text-gray-500 dark:text-zinc-400" />
+                    <ChevronDownIcon className="w-4 h-4 text-text-muted group-hover:text-accent transition-colors" />
                 ) : (
-                    <ChevronRightIcon className="w-4 h-4 text-gray-500 dark:text-zinc-400" />
+                    <ChevronRightIcon className="w-4 h-4 text-text-muted group-hover:text-accent transition-colors" />
                 )}
             </div>
 
@@ -64,19 +66,19 @@ function MyTasksSidebar() {
                 <div className="mt-2 pl-2">
                     <div className="space-y-1">
                         {myTasks.length === 0 ? (
-                            <div className="px-3 py-2 text-xs text-gray-500 dark:text-zinc-500 text-center">
+                            <div className="mx-1 px-3 py-3 text-xs muted-text text-center rounded-xl bg-bg-soft/50 border border-dashed border-border-soft">
                                 No tasks assigned
                             </div>
                         ) : (
                             myTasks.map((task, index) => (
-                                <Link key={index} to={`/taskDetails?projectId=${task.projectId}&taskId=${task.id}`} className="w-full rounded-lg transition-all duration-200 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white" >
-                                    <div className="flex items-center gap-2 px-3 py-2 w-full min-w-0">
+                                <Link key={index} to={`/taskDetails?projectId=${task.projectId}&taskId=${task.id}`} className="w-full block rounded-xl transition-all duration-200 text-text-soft hover:bg-bg-soft hover:text-text group" >
+                                    <div className="flex items-center gap-2.5 px-3 py-2 w-full min-w-0">
                                         <div className={`w-2 h-2 rounded-full ${getTaskStatusColor(task.status)} flex-shrink-0`} />
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-medium truncate">
+                                            <p className="text-xs font-medium truncate group-hover:text-accent transition-colors">
                                                 {task.title}
                                             </p>
-                                            <p className="text-xs text-gray-500 dark:text-zinc-500 lowercase">
+                                            <p className="text-xs muted-text capitalize mt-0.5">
                                                 {task.status.replace('_', ' ')}
                                             </p>
                                         </div>

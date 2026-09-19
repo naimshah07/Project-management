@@ -3,13 +3,20 @@ import { ArrowRight, Clock, AlertTriangle, User } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useUser } from "@clerk/clerk-react";
 
+const typeStyles = {
+    BUG: { bg: "color-mix(in srgb, #ef4444 16%, transparent)", fg: "#dc2626" },
+    FEATURE: { bg: "color-mix(in srgb, #3b82f6 16%, transparent)", fg: "#2563eb" },
+    TASK: { bg: "color-mix(in srgb, #10b981 16%, transparent)", fg: "#059669" },
+    IMPROVEMENT: { bg: "color-mix(in srgb, #8b5cf6 16%, transparent)", fg: "#7c3aed" },
+    OTHER: { bg: "color-mix(in srgb, #f59e0b 16%, transparent)", fg: "#d97706" },
+};
+
 export default function TasksSummary() {
 
     const { currentWorkspace } = useSelector((state) => state.workspace);
     const { user } = useUser();
     const [tasks, setTasks] = useState([]);
 
-    // Get all tasks for all projects in current workspace
     useEffect(() => {
         if (currentWorkspace) {
             setTasks(currentWorkspace.projects.flatMap((project) => project.tasks));
@@ -28,62 +35,81 @@ export default function TasksSummary() {
             title: "My Tasks",
             count: myTasks.length,
             icon: User,
-            color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400",
+            accent: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
             items: myTasks.slice(0, 3)
         },
         {
             title: "Overdue",
             count: overdueTasks.length,
             icon: AlertTriangle,
-            color: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-400",
+            accent: "linear-gradient(135deg, #ef4444 0%, #ec4899 100%)",
             items: overdueTasks.slice(0, 3)
         },
         {
             title: "In Progress",
             count: inProgressIssues.length,
             icon: Clock,
-            color: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-400",
+            accent: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
             items: inProgressIssues.slice(0, 3)
         }
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             {summaryCards.map((card) => (
-                <div key={card.title} className="bg-white dark:bg-zinc-950 dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 rounded-lg overflow-hidden">
-                    <div className="border-b border-zinc-200 dark:border-zinc-800 p-4 pb-3">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                                <card.icon className="w-4 h-4 text-gray-500 dark:text-zinc-400" />
-                            </div>
-                            <div className="flex items-center justify-between flex-1">
-                                <h3 className="text-sm font-medium text-gray-800 dark:text-white">{card.title}</h3>
-                                <span className={`inline-block mt-1 px-2 py-1 rounded text-xs font-semibold ${card.color}`}>
-                                    {card.count}
-                                </span>
-                            </div>
+                <div key={card.title} className="card overflow-hidden">
+                    <div className="px-5 py-4 flex items-center gap-3 border-b border-border dark:border-border">
+                        <div
+                            className="shrink-0 size-10 rounded-xl flex items-center justify-center text-white shadow-sm"
+                            style={{ background: card.accent }}
+                        >
+                            <card.icon className="size-4.5" strokeWidth={2.2} />
+                        </div>
+                        <div className="flex items-center justify-between flex-1">
+                            <h3 className="section-title">{card.title}</h3>
+                            <span
+                                className="badge font-semibold text-white text-xs"
+                                style={{ background: card.accent }}
+                            >
+                                {card.count}
+                            </span>
                         </div>
                     </div>
                     <div className="p-4">
                         {card.items.length === 0 ? (
-                            <p className="text-sm text-gray-500 dark:text-zinc-400 text-center py-4">
-                                No {card.title.toLowerCase()}
-                            </p>
+                            <div className="py-5 text-center">
+                                <p className="text-text-soft text-sm mb-1">No {card.title.toLowerCase()}</p>
+                                <p className="muted-text">You're all caught up!</p>
+                            </div>
                         ) : (
-                            <div className="space-y-3">
-                                {card.items.map((issue) => (
-                                    <div key={issue.id} className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-                                        <h4 className="text-sm font-medium text-gray-800 dark:text-white truncate">
-                                            {issue.title}
-                                        </h4>
-                                        <p className="text-xs text-gray-600 dark:text-zinc-400 capitalize mt-1">
-                                            {issue.type} • {issue.priority} priority
-                                        </p>
-                                    </div>
-                                ))}
+                            <div className="space-y-2">
+                                {card.items.map((issue) => {
+                                    const ts = typeStyles[issue.type] || typeStyles.TASK;
+                                    return (
+                                        <div
+                                            key={issue.id}
+                                            className="p-3.5 rounded-xl hover:bg-border-soft dark:hover:bg-border-soft transition-colors cursor-pointer border border-transparent hover:border-border"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <h4 className="text-sm font-medium text-text truncate flex-1">
+                                                    {issue.title}
+                                                </h4>
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                                <span
+                                                    className="badge"
+                                                    style={{ background: ts.bg, color: ts.fg }}
+                                                >
+                                                    {issue.type}
+                                                </span>
+                                                <span className="muted-text">• {issue.priority} priority</span>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
                                 {card.count > 3 && (
-                                    <button className="flex items-center justify-center w-full text-sm text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-white mt-2">
-                                        View {card.count - 3} more <ArrowRight className="w-3 h-3 ml-2" />
+                                    <button className="btn-ghost w-full justify-center mt-1">
+                                        View {card.count - 3} more <ArrowRight className="size-3.5" />
                                     </button>
                                 )}
                             </div>
