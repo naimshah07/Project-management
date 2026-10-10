@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import MyTasksSidebar from './MyTasksSidebar'
 import ProjectSidebar from './ProjectsSidebar'
 import WorkspaceDropdown from './WorkspaceDropdown'
-import { FolderOpenIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon } from 'lucide-react'
+import { FolderOpenIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon, Github, Linkedin, Twitter, Instagram } from 'lucide-react'
 import { useClerk } from '@clerk/clerk-react'
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
@@ -65,6 +65,49 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
                 <MyTasksSidebar />
                 <ProjectSidebar />
+            </div>
+
+            {/* Social Links Footer */}
+            <div className="border-t border-border-soft dark:border-border-soft px-5 py-4">
+                <p className="text-xs font-medium text-text-muted mb-3 uppercase tracking-wider">Follow Me</p>
+                <div className="flex items-center gap-2">
+                    <a
+                        href="https://github.com/naimshah07"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="social-link"
+                        aria-label="GitHub"
+                    >
+                        <Github size={17} strokeWidth={2} />
+                    </a>
+                    <a
+                        href="https://www.linkedin.com/in/naimshah07an/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="social-link"
+                        aria-label="LinkedIn"
+                    >
+                        <Linkedin size={17} strokeWidth={2} />
+                    </a>
+                    <a
+                        href="https://twitter.com/naimshah_07"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="social-link"
+                        aria-label="Twitter"
+                    >
+                        <Twitter size={17} strokeWidth={2} />
+                    </a>
+                    <a
+                        href="https://www.instagram.com/naimshah_07"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="social-link"
+                        aria-label="Instagram"
+                    >
+                        <Instagram size={17} strokeWidth={2} />
+                    </a>
+                </div>
             </div>
         </aside>
     )
